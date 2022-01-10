@@ -97,16 +97,11 @@ const getUniqueValues = (data, columnName) => {
 }
 
 const CdcMap = ({className, config, navigationHandler: customNavigationHandler, isDashboard = false, isEditor = false, configUrl, logo = null, setConfig, hostname}) => {
-     
-    const [showLoadingMessage, setShowLoadingMessage] = useState(false)
-    const [loadingMessage, setLoadingMessage] = useState('Loading...')
+
     const transform = new DataTransform()
     const [state, setState] = useState( {...initialState} )
-    const [loading, setLoading] = useState(true)
     const [currentViewport, setCurrentViewport] = useState('lg')
-    const [runtimeFilters, setRuntimeFilters] = useState([])
-    const [runtimeLegend, setRuntimeLegend] = useState([])
-    const [runtimeData, setRuntimeData] = useState({init: true})
+    const [runtime, setRuntime] = useState({data: {init: true}, legend: [], filters: []})
     const [modal, setModal] = useState(null)
     const [accessibleStatus, setAccessibleStatus] = useState('')
     let legendMemo = useRef(new Map())
@@ -449,11 +444,11 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
     })
 
     const generateRuntimeFilters = useCallback((obj, hash, runtimeFilters) => {
-        if(undefined === obj.filters || obj.filters.length === 0) return []
-
         let filters = []
 
         if(hash) filters.fromHash = hash
+
+        if(undefined === obj.filters || obj.filters.length === 0) return filters
 
         obj.filters.forEach(({columnName, label}, idx) => {
             if(undefined === columnName) return
@@ -639,8 +634,7 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
 
         const newData = generateRuntimeData(state, filters)
 
-        setRuntimeData(newData)
-        setRuntimeFilters(filters)
+        setRuntime({data: newData, filters, legend: runtime.legend});
     }
 
     const displayDataAsText = (value, columnName) => {
@@ -693,9 +687,9 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         if( legendMemo.current.has(hash) ) {
             let idx = legendMemo.current.get(hash)
 
-            if(runtimeLegend[idx]?.disabled) return false
+            if(runtime.legend[idx]?.disabled) return false
 
-            return generateColorsArray(runtimeLegend[idx]?.color, runtimeLegend[idx]?.special)
+            return generateColorsArray(runtime.legend[idx]?.color, runtime.legend[idx]?.special)
         }
 
         // Fail state
@@ -751,13 +745,13 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
 
     // This resets all active legend toggles.
     const resetLegendToggles = async () => {
-        let newLegend = [...runtimeLegend]
+        let newLegend = [...runtime.legend]
 
         newLegend.forEach(legendItem => {
             delete legendItem.disabled
         })
 
-        setRuntimeLegend(newLegend)
+        setRuntime({data: runtime.data, filters: runtime.filters, legend: newLegend});
     }
 
     // Supports JSON or CSV
@@ -877,7 +871,7 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
 
     const loadConfig = async (configObj) => {
         // Set loading flag
-        if(!loading) setLoading(true)
+        //if(!loading) setLoading(true)
 
         // Create new config object the same way each time no matter when this method is called.
         let newState = {
@@ -932,7 +926,7 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         setState(newState)
 
         // Done loading
-        setLoading(false)
+        //setLoading(false)
     }
 
     const init = async () => {
@@ -971,6 +965,11 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
     }, [state.general.geoType]);
 
     useEffect(() => {
+        let filters;
+        let runtimeData;
+        let legend;
+
+        if(!state.data) return;
 
         // UID
         if(state.data && state.columns.geo.name && state.columns.geo.name !== state.data.fromColumn) {
@@ -978,15 +977,10 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         }
 
         // Filters
-        const hashFilters = hashObj(state.filters)
-        let filters;
+        const hashFilters = hashObj(state.filters);
 
-        if(state.filters && hashFilters !== runtimeFilters.fromHash) {
-            filters = generateRuntimeFilters(state, hashFilters, runtimeFilters)
-
-            if(filters) {
-                setRuntimeFilters(filters)
-            }
+        if(state.filters && hashFilters !== runtime.filters.fromHash) {
+            filters = generateRuntimeFilters(state, hashFilters, runtime.filters)
          }
 
         const hashLegend = hashObj({
@@ -1001,9 +995,8 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         })
 
         // Legend
-        if (hashLegend !== runtimeLegend.fromHash && undefined === runtimeData.init) {
-            const legend = generateRuntimeLegend(state, runtimeData, hashLegend)
-            setRuntimeLegend(legend)
+        if (hashLegend !== runtime.legend.fromHash && true === runtime.data.init) {
+            legend = generateRuntimeLegend(state, state.data, hashLegend)
         }
 
         const hashData = hashObj({
@@ -1011,23 +1004,19 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
             type: state.general.type,
             geo: state.columns.geo.name,
             primary: state.columns.primary.name,
-            ...runtimeFilters
+            runtimeFilters: runtime.filters
         })
 
         // Data
-        if(hashData !== runtimeData.fromHash && state.data?.fromColumn) {
-            const data = generateRuntimeData(state, filters || runtimeFilters, hashData)
-            setRuntimeData(data) 
+        if(hashData !== runtime.data.fromHash && state.data?.fromColumn) {
+            runtimeData = generateRuntimeData(state, filters || runtime.filters, hashData);
+            legend = generateRuntimeLegend(state, runtimeData);
         }
-    }, [state])
 
-    useEffect(() => {
-        // Legend - Update when runtimeData does
-        if(undefined === runtimeData.init) {
-            const legend = generateRuntimeLegend(state, runtimeData)
-            setRuntimeLegend(legend)
+        if(runtimeData || legend || filters){
+            setRuntime({data: runtimeData || runtime.data, legend: legend || runtime.legend, filters: filters || runtime.filters});
         }
-    }, [runtimeData])
+    }, [state]);
 
     if(config) {
         useEffect(() => {
@@ -1069,7 +1058,8 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
     // Props passed to all map types
     const mapProps = {
         state,
-        data: runtimeData,
+        data: runtime.data,
+        runtimeLegend: runtime.legend,
         rebuildTooltips : ReactTooltip.rebuild,
         applyTooltipsToGeo,
         closeModal,
@@ -1077,42 +1067,26 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         geoClickHandler,
         applyLegendToRow,
         displayGeoName,
-        runtimeLegend,
         generateColorsArray
     }
 
-    const [mapToShow, setMapToShow] = useState(null)
+    const mapToShow = 'us' === state.general.geoType ? <UsaMap supportedTerritories={supportedTerritories} {...mapProps} /> :
+        'world' === state.general.geoType ? <WorldMap supportedCountries={supportedCountries} {...mapProps} /> :
+        <CountyMap supportedCountries={supportedCountries} {...mapProps} />
 
-    // const setMapUpdating = (isMapUpdating) => {
-    //     let timeLoading = 3000;
-    //     console.log('progress bar status', isMapUpdating)
-    //     if(isMapUpdating) { setLoading(true) }
-    //     if(!isMapUpdating) { setTimeout( () => setLoading(false), timeLoading ) }
-    // }
+    const hashData = hashObj({
+        geoType: state.general.geoType,
+        type: state.general.type,
+        geo: state.columns.geo.name,
+        primary: state.columns.primary.name,
+        runtimeFilters: runtime.filters
+    });
 
-    useEffect(() => {
-
-        if('us' === state.general.geoType) {
-            setMapToShow(<UsaMap supportedTerritories={supportedTerritories} {...mapProps} />)
-        }
-        if('world' === state.general.geoType) {
-            setMapToShow(<WorldMap supportedCountries={supportedCountries} {...mapProps} />)
-        }
-        if('us-county' === state.general.geoType) {
-            setShowLoadingMessage(true)
-            setMapToShow(<CountyMap supportedCountries={supportedCountries} {...mapProps} />)
-            setTimeout(()=>{
-                setShowLoadingMessage(false)
-            },2000);
-        }
-
-    }, [mapProps.state.general.geoBorderColor, mapProps.state.general.geoType, mapProps.state.general.type, mapProps.state.color, mapProps.data, mapProps.runtimeLegend]);
-
-    if(loading || !mapToShow) return <Loading />
+    if(!runtime.data || runtime.data.init || runtime.data.fromHash !== hashData || !state.data || !mapToShow) return <Loading />
 
     return (
         <div className={outerContainerClasses.join(' ')} ref={outerContainerRef}>
-            {isEditor && <EditorPanel isDashboard={isDashboard} state={state} setState={setState} loadConfig={loadConfig} setParentConfig={setConfig} runtimeFilters={runtimeFilters} runtimeLegend={runtimeLegend} columnsInData={Object.keys(state.data[0])}  />}
+            {isEditor && <EditorPanel isDashboard={isDashboard} state={state} setState={setState} loadConfig={loadConfig} setParentConfig={setConfig} runtimeFilters={runtime.filters} runtimeLegend={runtime.legend} columnsInData={Object.keys(state.data[0])}  />}
             <section className={`cdc-map-inner-container ${currentViewport}`} aria-label={'Map: ' + title}>
                     {['lg', 'md'].includes(currentViewport) && 'hover' === tooltips.appearanceType &&
                         <ReactTooltip
@@ -1143,7 +1117,7 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
                                 </div>
                             </div>
                         }
-                        { mapToShow && !showLoadingMessage && 
+                        { mapToShow && 
                             <section className="geography-container" aria-hidden="true" ref={mapSvg}>
                                 {modal && <Modal type={general.type} viewport={currentViewport} applyTooltipsToGeo={applyTooltipsToGeo} applyLegendToRow={applyLegendToRow} capitalize={state.tooltips.capitalizeLabels} content={modal} />}
                                 {/* {'us' === general.geoType && <UsaMap supportedTerritories={supportedTerritories} {...mapProps} />}
@@ -1157,20 +1131,14 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
                                 }
                             </section>
                         }
-                        {showLoadingMessage &&
-                            <section className="geography-container" aria-hidden="true" ref={mapSvg}>
-                                    <div className="waiting-container">
-                                        <h3>{loadingMessage}</h3>
-                                    </div>
-                            </section>
-                        }
                         {general.showSidebar && 'navigation' !== general.type &&
                             <Sidebar
                                 viewport={currentViewport}
                                 legend={state.legend}
-                                runtimeLegend={runtimeLegend}
-                                setRuntimeLegend={setRuntimeLegend}
-                                runtimeFilters={runtimeFilters}
+                                setRuntime={setRuntime}
+                                runtimeLegend={runtime.legend}
+                                runtimeFilters={runtime.filters}
+                                runtimeData={runtime.data}
                                 columns={state.columns}
                                 sharing={state.sharing}
                                 prefix={state.columns.primary.prefix}
@@ -1185,13 +1153,13 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
                     {"navigation" === general.type &&
                             <NavigationMenu
                                 displayGeoName={displayGeoName}
-                                data={runtimeData}
+                                data={runtime.data}
                                 options={general}
                                 columns={state.columns}
                                 navigationHandler={(val) => navigationHandler(val)}
                             />
                         }
-                    {true === dataTable.forceDisplay && general.type !== "navigation" && false === loading &&
+                    {true === dataTable.forceDisplay && general.type !== "navigation" &&
                         <DataTable
                             state={state}
                             rawData={state.data}
@@ -1200,8 +1168,8 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
                             headerColor={general.headerColor}
                             columns={state.columns}
                             showDownloadButton={general.showDownloadButton}
-                            runtimeLegend={runtimeLegend}
-                            runtimeData={runtimeData}
+                            runtimeLegend={runtime.legend}
+                            runtimeData={runtime.data}
                             displayDataAsText={displayDataAsText}
                             displayGeoName={displayGeoName}
                             applyLegendToRow={applyLegendToRow}

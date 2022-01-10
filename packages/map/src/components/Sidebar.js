@@ -8,12 +8,13 @@ const Sidebar = (props) => {
   const {
     legend,
     runtimeFilters,
+    runtimeLegend,
+    runtimeData,
+    setRuntime,
     columns,
     setAccessibleStatus,
     changeFilterActive,
     resetLegendToggles,
-    runtimeLegend,
-    setRuntimeLegend,
     prefix,
     suffix,
     viewport
@@ -42,7 +43,7 @@ const Sidebar = (props) => {
 
     newLegend['disabledAmt'] = newValue ? disabledAmt + 1 : disabledAmt - 1
 
-    setRuntimeLegend(newLegend)
+    setRuntime({legend: newLegend, data: runtimeData, filters: runtimeFilters});
 
     setAccessibleStatus(`Disabled legend item ${legendLabel ?? ''}. Please reference the data table to see updated values.`);
   };
