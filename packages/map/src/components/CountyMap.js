@@ -279,7 +279,7 @@ const CountyMap = (props) => {
 
   function setStateLeave() {
     let focusedBorder = document.getElementById('focusedBorderPath');
-    focusedBorder.setAttribute('d', 'null');
+    focusedBorder.removeAttribute('d');
     focusedBorder.setAttribute('stroke', '#000');
   }
 
@@ -352,40 +352,39 @@ const CountyMap = (props) => {
           fillStyle = { display : 'none' }
         }
         return (
-          <>
-          <g
-            key={key}
-            className={`state state--${geo.properties.name}${focusedState === geo.id ? ' state--focused' : ' state--inactive' } state--${geo.id}`}
-            style={fillStyle}
-          >
-              <>
-                <path
-                  tabIndex={-1}
-                  className='state-path'
-                  d={path}
-                  fillOpacity={`${focusedState !== geo.id ? '1' : '0'}`}
-                  fill={STATE_INACTIVE_FILL}
-                  css={stateSelectedStyles}
-                  onClick={
-                    () => focusGeo(geo.id, geo)
-                  }
-                  onMouseEnter={
-                    (e) => {
-                      e.target.attributes.fill.value = mapColorPalette[3]
+          <g key={key}>
+            <g
+              className={`state state--${geo.properties.name}${focusedState === geo.id ? ' state--focused' : ' state--inactive' } state--${geo.id}`}
+              style={fillStyle}
+            >
+                <>
+                  <path
+                    tabIndex={-1}
+                    className='state-path'
+                    d={path}
+                    fillOpacity={`${focusedState !== geo.id ? '1' : '0'}`}
+                    fill={STATE_INACTIVE_FILL}
+                    css={stateSelectedStyles}
+                    onClick={
+                      () => focusGeo(geo.id, geo)
                     }
-                  }
-                  onMouseLeave={
-                    (e) => {
-                      e.target.attributes.fill.value = STATE_INACTIVE_FILL
+                    onMouseEnter={
+                      (e) => {
+                        e.target.attributes.fill.value = mapColorPalette[3]
+                      }
                     }
-                  }
-                />
-              </>
+                    onMouseLeave={
+                      (e) => {
+                        e.target.attributes.fill.value = STATE_INACTIVE_FILL
+                      }
+                    }
+                  />
+                </>
+            </g>
+            <g key={`label--${geo.properties.name}`}>
+              { offsets[geo.properties.name] && geoLabel(geo, geoAlbersUsaTerritories().translate([WIDTH/2,HEIGHT/2]))}
+            </g>
           </g>
-          <g key={`label--${geo.properties.name}`}>
-            { offsets[geo.properties.name] && geoLabel(geo, geoAlbersUsaTerritories().translate([WIDTH/2,HEIGHT/2]))}
-          </g>
-          </>
         )
     });
 
