@@ -96,7 +96,7 @@ const getUniqueValues = (data, columnName) => {
     return Object.keys(result)
 }
 
-const CdcMap = ({className, config, navigationHandler: customNavigationHandler, isDashboard = false, isEditor = false, configUrl, logo = null, setConfig, hostname}) => {
+const CdcMap = ({containerEl, className, config, navigationHandler: customNavigationHandler, isDashboard = false, isEditor = false, configUrl, logo = null, setConfig, hostname}) => {
 
     const transform = new DataTransform()
     const [state, setState] = useState( {...initialState} )
@@ -1060,6 +1060,7 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         state,
         data: runtime.data,
         runtimeLegend: runtime.legend,
+        containerEl,
         rebuildTooltips : ReactTooltip.rebuild,
         applyTooltipsToGeo,
         closeModal,
@@ -1074,19 +1075,11 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
         'world' === state.general.geoType ? <WorldMap supportedCountries={supportedCountries} {...mapProps} /> :
         <CountyMap supportedCountries={supportedCountries} {...mapProps} />
 
-    const hashData = hashObj({
-        geoType: state.general.geoType,
-        type: state.general.type,
-        geo: state.columns.geo.name,
-        primary: state.columns.primary.name,
-        runtimeFilters: runtime.filters
-    });
-
-    if(!runtime.data || runtime.data.init || runtime.data.fromHash !== hashData || !state.data || !mapToShow) return <Loading />
+    if(!runtime.data || runtime.data.init || !state.data || !mapToShow) return <Loading />
 
     return (
         <div className={outerContainerClasses.join(' ')} ref={outerContainerRef}>
-            {isEditor && <EditorPanel isDashboard={isDashboard} state={state} setState={setState} loadConfig={loadConfig} setParentConfig={setConfig} runtimeFilters={runtime.filters} runtimeLegend={runtime.legend} columnsInData={Object.keys(state.data[0])}  />}
+            {isEditor && <EditorPanel isDashboard={isDashboard} state={state} setState={setState} loadConfig={loadConfig} setParentConfig={setConfig} runtimeFilters={runtime.filters} runtimeLegend={runtime.legend} columnsInData={Object.keys(state.data[0])} containerEl={containerEl}  />}
             <section className={`cdc-map-inner-container ${currentViewport}`} aria-label={'Map: ' + title}>
                     {['lg', 'md'].includes(currentViewport) && 'hover' === tooltips.appearanceType &&
                         <ReactTooltip
@@ -1120,10 +1113,7 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
                         { mapToShow && 
                             <section className="geography-container" aria-hidden="true" ref={mapSvg}>
                                 {modal && <Modal type={general.type} viewport={currentViewport} applyTooltipsToGeo={applyTooltipsToGeo} applyLegendToRow={applyLegendToRow} capitalize={state.tooltips.capitalizeLabels} content={modal} />}
-                                {/* {'us' === general.geoType && <UsaMap supportedTerritories={supportedTerritories} {...mapProps} />}
-                                {'world' === general.geoType && <WorldMap supportedCountries={supportedCountries} {...mapProps} />}
-                                {'us-county' === general.geoType && <CountyMap supportedCountries={supportedCountries} {...mapProps} />}
-                                {"data" === general.type && logo && <img src={logo} alt="" className="map-logo"/>} */}
+
                                 { mapToShow }
 
                                 { ("data" === state.general.type && logo) &&

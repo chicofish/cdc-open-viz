@@ -76,8 +76,17 @@ const EditorPanel = (props) => {
     isDashboard,
     setParentConfig,
     runtimeFilters,
-    runtimeLegend
+    runtimeLegend,
+    containerEl
   } = props
+
+  const setStateWithLoader = (updatedState) => {
+    containerEl.className = containerEl.className.replace(' loaded', '');
+
+    setTimeout(() => {
+      setState(updatedState)
+    }, 10);
+  };
 
   const { general, columns, legend, dataTable, tooltips} = state
 
@@ -136,7 +145,7 @@ const EditorPanel = (props) => {
   const handleEditorChanges = async (property, value) => {
     switch (property) {
       case 'showTitle':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -145,7 +154,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'showSidebar':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -154,7 +163,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'fullBorder':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -163,7 +172,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'expandDataTable':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -172,13 +181,13 @@ const EditorPanel = (props) => {
         })
       break;
       case 'color':
-        setState({
+        setStateWithLoader({
           ...state,
           color: value
         })
       break;
       case 'sidebarPosition':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
               ...state.legend,
@@ -187,7 +196,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'geoBorderColor':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -196,7 +205,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'headerColor':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -205,7 +214,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'navigateColumn':
-        setState({
+        setStateWithLoader({
           ...state,
           columns: {
               ...state.columns,
@@ -217,7 +226,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'legendDescription':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
               ...state.legend,
@@ -226,7 +235,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'legendType':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
             ...state.legend,
@@ -235,7 +244,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'legendNumber':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
             ...state.legend,
@@ -249,7 +258,7 @@ const EditorPanel = (props) => {
         setActiveFilterValueForDescription(arrVal)
       break;
       case 'unifiedLegend':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
             ...state.legend,
@@ -258,7 +267,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'separateZero':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
             ...state.legend,
@@ -267,7 +276,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'toggleDownloadButton':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -276,7 +285,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'toggleDownloadMediaButton':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -285,7 +294,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'displayAsHex':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -296,7 +305,7 @@ const EditorPanel = (props) => {
       case 'editorMapType':
         switch(value) {
             case 'data':
-              setState({
+              setStateWithLoader({
                 ...state,
                 general: {
                     ...state.general,
@@ -306,7 +315,7 @@ const EditorPanel = (props) => {
               })
               break;
             case 'navigation':
-              setState({
+              setStateWithLoader({
                 ...state,
                 general: {
                     ...state.general,
@@ -346,7 +355,7 @@ const EditorPanel = (props) => {
 
         switch(value) {
             case 'us':
-              setState({
+              setStateWithLoader({
                 ...state,
                 general: {
                     ...state.general,
@@ -360,7 +369,7 @@ const EditorPanel = (props) => {
               ReactTooltip.rebuild()
               break;
             case 'world':
-              setState({
+              setStateWithLoader({
                 ...state,
                 general: {
                     ...state.general,
@@ -373,7 +382,7 @@ const EditorPanel = (props) => {
               })
               break;
             case 'us-county':
-              setState({
+              setStateWithLoader({
                 ...state,
                 general: {
                     ...state.general,
@@ -394,7 +403,7 @@ const EditorPanel = (props) => {
         ReactTooltip.rebuild()
       break;
       case 'singleColumnLegend':
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
               ...state.legend,
@@ -403,7 +412,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'dynamicDescription':
-        setState({
+        setStateWithLoader({
           ...state,
           editor: {
             ...state.editor,
@@ -417,7 +426,7 @@ const EditorPanel = (props) => {
       break;
       case 'changeLegendDescription':
         const [filterValKey, filterValDesc] = value
-        setState({
+        setStateWithLoader({
           ...state,
           legend: {
               ...state.legend,
@@ -429,7 +438,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'appearanceType':
-        setState({
+        setStateWithLoader({
           ...state,
           tooltips: {
               ...state.tooltips,
@@ -438,7 +447,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'linkLabel':
-        setState({
+        setStateWithLoader({
           ...state,
           tooltips: {
               ...state.tooltips,
@@ -447,7 +456,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'displayStateLabels':
-        setState({
+        setStateWithLoader({
           ...state,
           general: {
               ...state.general,
@@ -456,7 +465,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'capitalizeLabels':
-        setState({
+        setStateWithLoader({
           ...state,
           tooltips: {
               ...state.tooltips,
@@ -465,7 +474,7 @@ const EditorPanel = (props) => {
         })
       break;
       case 'showDataTable':
-        setState({
+        setStateWithLoader({
           ...state,
           dataTable: {
               ...state.dataTable,
@@ -509,7 +518,7 @@ const EditorPanel = (props) => {
 
             updatedSpecialClasses.splice(value, 1)
 
-            setState({
+            setStateWithLoader({
               ...state,
               legend: {
                 ...state.legend,
@@ -522,7 +531,7 @@ const EditorPanel = (props) => {
 
             newSpecialClasses.push(value.name)
 
-            setState({
+            setStateWithLoader({
               ...state,
               legend: {
                   ...state.legend,
@@ -531,7 +540,7 @@ const EditorPanel = (props) => {
             })
         break;
         case 'name':
-          setState({
+          setStateWithLoader({
             ...state,
             columns: {
                 ...state.columns,
@@ -544,7 +553,7 @@ const EditorPanel = (props) => {
 
           break;
         default:
-          setState({
+          setStateWithLoader({
             ...state,
             columns: {
                 ...state.columns,
@@ -580,7 +589,7 @@ const EditorPanel = (props) => {
           break;
       }
 
-      setState({
+      setStateWithLoader({
         ...state,
         filters: newFilters
       })
@@ -589,7 +598,7 @@ const EditorPanel = (props) => {
   const addAdditionalColumn = (number) => {
       const columnKey = `additionalColumn${number}`
 
-      setState({
+      setStateWithLoader({
         ...state,
         columns: {
             ...state.columns,
@@ -609,7 +618,7 @@ const EditorPanel = (props) => {
 
       delete newColumns[columnName]
 
-      setState({
+      setStateWithLoader({
         ...state,
         columns: newColumns
       })
@@ -729,7 +738,7 @@ const EditorPanel = (props) => {
       [section]: sectionValue
     }
 
-    setState(updatedState)
+    setStateWithLoader(updatedState);
   }
 
   const onBackClick = () => {

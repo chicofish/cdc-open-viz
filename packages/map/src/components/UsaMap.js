@@ -67,7 +67,8 @@ const UsaMap = (props) => {
     applyLegendToRow,
     displayGeoName,
     supportedTerritories,
-    rebuildTooltips
+    rebuildTooltips,
+    containerEl
   } = props;
 
   const isHex = state.general.displayAsHex
@@ -75,6 +76,12 @@ const UsaMap = (props) => {
   const [territoriesData, setTerritoriesData] = useState([]);
 
   const territoriesKeys = Object.keys(supportedTerritories); // data will have already mapped abbreviated territories to their full names
+
+  useEffect(() => {
+    if(containerEl.className.indexOf('loaded') === -1){
+      containerEl.className += ' loaded';
+    }
+  });
 
   useEffect(() => {
     // Territories need to show up if they're in the data at all, not just if they're "active". That's why this is different from Cities

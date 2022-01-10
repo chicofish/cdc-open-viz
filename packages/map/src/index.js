@@ -10,7 +10,7 @@ const domContainer = document.querySelector('.react-container')
 
 ReactDOM.render(
   <StrictMode>
-    <CdcMap isEditor={isEditor} configUrl={domContainer.attributes['data-config'].value} />
+    <CdcMap isEditor={isEditor} configUrl={domContainer.attributes['data-config'].value} containerEl={domContainer} />
   </StrictMode>,
   domContainer
 );

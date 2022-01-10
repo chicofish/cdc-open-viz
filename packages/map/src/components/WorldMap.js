@@ -57,12 +57,19 @@ const WorldMap = (props) => {
     applyLegendToRow,
     displayGeoName,
     supportedCountries,
-    rebuildTooltips
+    rebuildTooltips,
+    containerEl
   } = props;
 
   const [position, setPosition] = useState({ coordinates: [0, 30], zoom: 1 });
 
   useEffect(() => rebuildTooltips());
+
+  useEffect(() => {
+    if(containerEl.className.indexOf('loaded') === -1){
+      containerEl.className += ' loaded';
+    }
+  });
 
   const handleMoveEnd = (position) => {
     setPosition(position);
