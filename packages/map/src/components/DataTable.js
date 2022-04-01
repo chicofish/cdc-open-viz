@@ -312,7 +312,7 @@ const DataTable = (props) => {
               </tr>
             ))}
           </thead>
-          <tbody {...getTableBodyProps()} style={{ width: '100%', display: 'block', maxHeight: '250px' }}>
+          <tbody {...getTableBodyProps()}>
             {rows.map((row) => {
               prepareRow(row);
               return (
