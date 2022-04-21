@@ -3,6 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 // IE11
 import 'core-js/stable'
 import ResizeObserver from 'resize-observer-polyfill'
+import colorPalettes from './data/color-palettes';
+
 import 'whatwg-fetch'
 
 import { LegendOrdinal, LegendItem, LegendLabel } from '@visx/legend';
@@ -47,14 +49,27 @@ export default function CdcChart(
   const legendGlyphSizeHalf = legendGlyphSize / 2;
 
   const handleChartTabbing = config.showSidebar ? `#legend` : config?.title ? `#dataTableSection__${config.title.replace(/\s/g, '')}` : `#dataTableSection`
-
-  const colorPalettes = {
-    'qualitative-bold': ['#377eb8', '#ff7f00', '#4daf4a', '#984ea3', '#e41a1c', '#ffff33', '#a65628', '#f781bf', '#3399CC'],
-    'qualitative-soft': ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C', '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00', '#ACA9EB'],
-    'sequential-blue': ['#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6', '#2171B5', '#084594'],
-    'sequential-blue-reverse': ['#084594', '#2171B5', '#4292C6', '#6BAED6', '#9ECAE1', '#C6DBEF'],
-    'sequential-green': ['#C7E9C0', '#A1D99B', '#74C476', '#41AB5D', '#238B45', '#005A32']
-  };
+  console.log('colors', colorPalettes)
+  // const colorPalettes = {
+  //   'qualitative-bold': ['#377eb8', '#ff7f00', '#4daf4a', '#984ea3', '#e41a1c', '#ffff33', '#a65628', '#f781bf', '#3399CC'],
+  //   'qualitative-soft': ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C', '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00', '#ACA9EB'],
+  //   'qualitative-one':  [ '#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#6a3d9a','#cab2d6','#E31A90','#15017A','#C2C0FC'],
+  //   'qualitative-two': ['#7fc97f','#beaed4','#ff9','#386cb0','#f0027f','#bf5b17','#666','#fedab8'],
+  //   'qualitative-three': ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d','#666'],
+  //   'qualitative-four': ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ff3','#a65628','#f781bf'],
+  //   qualitative9: [
+  //   '#497d0c',
+  //   '#84BC49',
+  //   '#88c3ea',
+  //   '#fcad90',
+  //   '#f26b4f',
+  //   '#c31b1f',
+  //   '#c31b1f'
+  // ],
+  //   'sequential-blue': ['#C6DBEF', '#9ECAE1', '#6BAED6', '#4292C6', '#2171B5', '#084594'],
+  //   'sequential-blue-reverse': ['#084594', '#2171B5', '#4292C6', '#6BAED6', '#9ECAE1', '#C6DBEF'],
+  //   'sequential-green': ['#C7E9C0', '#A1D99B', '#74C476', '#41AB5D', '#238B45', '#005A32']
+  // };
 
   const loadConfig = async () => {
     let response = configObj || await (await fetch(configUrl)).json();
