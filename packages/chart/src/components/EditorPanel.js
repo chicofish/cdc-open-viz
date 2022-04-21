@@ -633,7 +633,10 @@ const EditorPanel = () => {
                         </ul>
                       </>)}
                       
-                      <Select fieldName="visualizationType" label="Add Data Series" initial="Select" onChange={(e) => { if(e.target.value !== '' && e.target.value !== 'Select') { addNewSeries(e.target.value) } e.target.value = '' }} options={getColumns()} />
+                      { ( (config.visualizationType === 'Paired Bar' && config.series.length < 2) || config.visualizationType !== 'Paired Bar') &&
+                        <Select fieldName="visualizationType" label="Add Data Series" initial="Select" onChange={(e) => { if(e.target.value !== '' && e.target.value !== 'Select') { addNewSeries(e.target.value) } e.target.value = '' }} options={getColumns()} />
+                      }
+                      
                       {config.series && config.series.length <= 1 && config.visualizationType === "Bar" && (
                         <>
                           <span className="divider-heading">Confidence Keys</span>
