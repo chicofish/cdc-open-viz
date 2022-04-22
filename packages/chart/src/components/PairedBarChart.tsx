@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, FC } from 'react';
 import { Group } from '@visx/group';
 import { Bar } from '@visx/shape';
 import { scaleLinear, scaleBand } from '@visx/scale';
@@ -13,31 +13,42 @@ interface PairedBarChartProps {
 	height: number
 }
 
+interface group {
+	parentKey: string,
+	dataKey: string,
+	color: string,
+	max: number,
+	labelColor: string
+}
+
 const PairedBarChart: React.FC<PairedBarChartProps> = ({ width, height }) => {
 
 	const { config, colorScale, transformedData } = useContext<any>(Context);
 
 	if(!config || config?.series?.length < 2) return;
 
+	
 	const data = transformedData
 	const adjustedWidth = width;
 	const adjustedHeight = height;
 	const halfWidth = adjustedWidth / 2;
+	let labelColor = '#000000';
 
-	const groupOne = {
+
+	const groupOne: group = {
 		parentKey: config.dataDescription.seriesKey,
 		dataKey: config.series[0].dataKey,
 		color: colorScale(config.runtime.seriesLabels[config.series[0].dataKey]),
 		max: Math.max.apply(Math, data.map(item => item[config.series[0].dataKey])),
-		labelColor: ''
+		labelColor: chroma.contrast(labelColor, colorScale(config.runtime.seriesLabels[config.series[0].dataKey]) ) < 4.9 ? '#FFFFFF' : labelColor
 	}
-	
-	const groupTwo = {
+
+	const groupTwo: group = {
 		parentKey: config.dataDescription.seriesKey,
 		dataKey: config.series[1].dataKey,
 		color: colorScale(config.runtime.seriesLabels[config.series[1].dataKey]),
 		max: Math.max.apply(Math, data.map(item => item[config.series[1].dataKey])),
-		labelColor: ''
+		labelColor: chroma.contrast(labelColor, colorScale(config.runtime.seriesLabels[config.series[0].dataKey]) ) < 4.9 ? '#FFFFFF' : labelColor
 	}
 	
 	const xScale = scaleLinear({
@@ -52,15 +63,14 @@ const PairedBarChart: React.FC<PairedBarChartProps> = ({ width, height }) => {
 		padding: 0.2
 	});
 
-	// Set label color
-	let labelColor = '#000000';
-
-	if (chroma.contrast(labelColor, groupOne.color) < 4.9) {
-		groupOne.labelColor = '#FFFFFF';
-	}
-
-	if (chroma.contrast(labelColor, groupTwo.color) < 4.9) {
-		groupTwo.labelColor = '#FFFFFF';
+	const barToolTip = (config, group: group, data) => {
+		return (
+			`<p>
+				${config.dataDescription.seriesKey ? config.dataDescription.seriesKey + ':': null } ${group.dataKey && group.dataKey}<br/>
+				${config.xAxis.dataKey ? config.xAxis.dataKey + ':' : null} ${data[config.xAxis.dataKey] && data[config.xAxis.dataKey]}<br/>
+				${config.dataDescription.valueKey ? config.dataDescription.valueKey + ':' : null} ${data[group.dataKey] && data[group.dataKey]}
+			</p>`
+		)
 	}
 
 	return (width > 0) && (
@@ -82,13 +92,7 @@ const PairedBarChart: React.FC<PairedBarChartProps> = ({ width, height }) => {
 								width={xScale(d[config.series[0].dataKey])}
 								height={yScale.bandwidth()}
 								fill={groupOne.color}
-								data-tip={
-									`<p>
-										${config.dataDescription.seriesKey}: ${groupOne.dataKey}<br/>
-										${config.xAxis.dataKey}: ${d[config.xAxis.dataKey]}<br/>
-										${config.dataDescription.valueKey}: ${d[groupOne.dataKey]}
-									</p>`
-								}
+								data-tip={ barToolTip(config, groupOne, d) }
 								data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
 							/>
 							<Text
@@ -103,7 +107,6 @@ const PairedBarChart: React.FC<PairedBarChartProps> = ({ width, height }) => {
 					)}
 					{data.filter(item => config.series[1].dataKey === groupTwo.dataKey).map(d => {
 						let barWidth = (xScale(d[config.series[1].dataKey]))
-
 						return(
 							<Group key={`group-${groupTwo.dataKey}-${d[config.dataDescription.xKey]}`}>
 								<Bar
@@ -114,13 +117,7 @@ const PairedBarChart: React.FC<PairedBarChartProps> = ({ width, height }) => {
 									width={xScale(d[config.series[1].dataKey])}
 									height={yScale.bandwidth()}
 									fill={groupTwo.color}
-									data-tip={
-										`<p>
-											${config.dataDescription.seriesKey}: ${groupTwo.dataKey}<br/>
-											${config.xAxis.dataKey}: ${d[config.xAxis.dataKey]}<br/>
-											${config.dataDescription.valueKey}: ${d[groupTwo.dataKey]}
-										</p>`
-									}
+									data-tip={ barToolTip(config, groupTwo, d) }
 									data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
 
 								/>
