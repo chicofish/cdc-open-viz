@@ -142,12 +142,8 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
 
             // United States check
             if("us" === obj.general.geoType) {
-                let geoName = '';
-                if(row[obj.columns.geo.name] !== undefined && row[obj.columns.geo.name] !== null ){
-
-                    geoName = String(row[obj.columns.geo.name])
-                    geoName = geoName.toUpperCase()
-                }
+                const geoName = row[obj.columns.geo.name] ? String(row[obj.columns.geo.name]).toUpperCase() :'';
+           
 
                 // States
                 uid = stateKeys.find( (key) => supportedStates[key].includes(geoName) )
@@ -830,13 +826,8 @@ const CdcMap = ({className, config, navigationHandler: customNavigationHandler, 
 
                 if (true === column.tooltip) {
 
-                    let label = '';
-                    if(column.label !== undefined && column.lebel !==null){
-                        // column.label could be : Number || String || undefined types
-                        label = String(column.label)
-                    }
-                    
-                    
+                    const label = String(column.label) ?  String(column.label) :'';
+                   
                     let value;
 
                     if(state.legend.specialClasses && state.legend.specialClasses.length && typeof state.legend.specialClasses[0] === 'object'){
