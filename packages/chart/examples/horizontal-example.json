@@ -1,0 +1,36 @@
+{
+    "title": "Horizontal Bar Refactor",
+    "dataUrl":  "/examples/planet-example-data.json",
+    "visualizationType": "HorizontalBarChart",
+    "barHasBorder": "true",
+    "series": [{"dataKey":"Radius", "type":"Line"}],
+    "fontSize": "small",
+    "dataFormat": {
+        "roundTo": 1,
+        "commas": false,
+        "prefix": "",
+        "suffix": "km"
+    },
+    "padding": {
+        "left": 0,
+        "right": 0
+    },
+    "yAxis": {
+        "label": "Measurement (1000km)",
+        "displayNumbersOnBar": false,
+        "labelPlacement": "On Date/Category Axis"
+    },
+    "xAxis": {
+        "label": "Planet",
+        "dataKey": "name",
+        "size": 75
+    },
+    "table": {
+        "label": "Data Table",
+        "expanded": false
+    },
+    "lollipopShape": "circle",
+	"runtime": {
+		"horizontal": true
+	}
+}

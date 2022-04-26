@@ -24,6 +24,7 @@ import './scss/main.scss';
 import EditorPanel from './components/EditorPanel';
 import numberFromString from '@cdc/core/helpers/numberFromString'
 import LegendCircle from '@cdc/core/components/LegendCircle';
+import HorizontalBarChart from './components/HorizontalBarChart';
 
 export default function CdcChart(
   { configUrl, config: configObj, isEditor = false, isDashboard = false, setConfig: setParentConfig, setEditing} :
@@ -434,8 +435,11 @@ export default function CdcChart(
   // Destructure items from config for more readable JSX
   const { legend, title, description, visualizationType } = config;
 
+  console.log('viz type', visualizationType)
+
   // Select appropriate chart type
   const chartComponents = {
+    'HorizontalBarChart': <LinearChart />,
     'Paired Bar' : <LinearChart />,
     'Bar' : <LinearChart />,
     'Line' : <LinearChart />,

@@ -11,6 +11,7 @@ import BarChart from './BarChart';
 import LineChart from './LineChart';
 import Context from '../context';
 import PairedBarChart from './PairedBarChart';
+import HorizontalBarChart from './HorizontalBarChart';
 
 import ErrorBoundary from '@cdc/core/components/ErrorBoundary';
 
@@ -423,13 +424,18 @@ export default function LinearChart() {
             <PairedBarChart  width={xMax} height={yMax} />
           ) }
           
-          {/* Bar chart */}
-          { (config.visualizationType !== 'Line' && config.visualizationType !== 'Paired Bar') && (
+          {/* Horizontal Bar chart */}
+          { (config.visualizationType === 'HorizontalBarChart') && (
+            <HorizontalBarChart width={xMax} height={yMax} xScale={xScale} yScale={yScale} seriesScale={seriesScale} xMax={xMax} yMax={yMax} getXAxisData={getXAxisData} getYAxisData={getYAxisData} />
+          )}
+
+          {/* Vertical Bar chart */}
+          { (config.visualizationType !== 'Line' && config.visualizationType !== 'Paired Bar' && config.visualizationType !== 'HorizontalBarChart') && (
             <BarChart xScale={xScale} yScale={yScale} seriesScale={seriesScale} xMax={xMax} yMax={yMax} getXAxisData={getXAxisData} getYAxisData={getYAxisData} />
           )}
 
           {/* Line chart */}
-          { (config.visualizationType !== 'Bar' && config.visualizationType !== 'Paired Bar') && (
+          { (config.visualizationType !== 'Bar' && config.visualizationType !== 'Paired Bar' && config.visualizationType !== 'HorizontalBarChart') && (
             <LineChart xScale={xScale} yScale={yScale} getXAxisData={getXAxisData} getYAxisData={getYAxisData} />
           )}
       </svg>
