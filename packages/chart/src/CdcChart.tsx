@@ -435,11 +435,9 @@ export default function CdcChart(
   // Destructure items from config for more readable JSX
   const { legend, title, description, visualizationType } = config;
 
-  console.log('viz type', visualizationType)
-
   // Select appropriate chart type
   const chartComponents = {
-    'HorizontalBarChart': <LinearChart />,
+    'Horizontal Bar Chart': <LinearChart />,
     'Paired Bar' : <LinearChart />,
     'Bar' : <LinearChart />,
     'Line' : <LinearChart />,

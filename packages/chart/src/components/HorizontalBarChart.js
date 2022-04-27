@@ -1,78 +1,53 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Group } from '@visx/group';
+import { Text } from '@visx/text';
 import { BarGroupHorizontal, Bar } from '@visx/shape';
-import { scaleLinear, scaleBand } from '@visx/scale';
 import Context from '../context';
-import { AxisLeft } from '@visx/axis';
+import useLollipopChart from './../hooks/useLollipopChart';
+import chroma from 'chroma-js';
 
-const HorizontalBarChart = ({width, height}) => {
+const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 
-	const { transformedData: data, config, colorScale } = useContext(Context);
-	
+	const { transformedData: data, config, colorScale, formatNumber, seriesHighlight } = useContext(Context);
+	const { lollipopShapeSize, lollipopBarWidth } = useLollipopChart();
+
+	// Kind of akward, we have config.barHeight but I think it's getting changed by yScale
+	// This is used to retreive the true bar height so we can add text below the bars
+	const [ localBarHeight, setLocalBarHeight ] = useState(null)
+
+	// Padding on labels inner/outer on bars.
+	const barTextPadding = 5;
 	
 	/**
-	 * todo: add Lollipop items
-	 * todo: update axis/ticks in linear chart
+	 * todo: fix/add lollipop items
+	 * todo: display numbers on bar / after bar lollipop change
 	 */
 
 	let categoryKey = config.xAxis.dataKey;
-	let metricKey = config.series[0].dataKey;
 	const keys = config.series.map( series => series.dataKey);
-	console.log('max', max(data, (d) => max(keys, (key) => Number(d[key]))))
-
-	function max(arr, fn)  {
-		return Math.max(...arr.map(fn));
-	}
-
 	const getCategoryScale = (data) => data[categoryKey]
-
-
-	// Metric value on max
-	const xScale = scaleLinear({
-		domain: [0, max(data, (d) => max(keys, (key) => Number(d[key])))],
-		range: [0, width]
-	});
-	
-	
-	// Category value as map
-	// Metric value on sort
-	const yScale = scaleBand({
-		domain: data.map(getCategoryScale),
-		padding: 0.2
-	});
-
-	const seriesScale = scaleBand({
-		domain: keys,
-	});
-
-	// update scale output dimensions
-	yScale.rangeRound([0, height]);
-	seriesScale.rangeRound([0, yScale.bandwidth()]);
-	xScale.rangeRound([0, width]);
-
-
-	const DEBUG = true;
-
-	if(DEBUG) {
-		console.log('data', data)
-		console.log('width', width)
-		console.log('height', height)
-		console.log('yScale @ 0', yScale(data[0][categoryKey]))
-		console.log('yScale height', yScale.bandwidth())
-		console.log('xScale/barwidth', xScale(data[0][metricKey]))
-		console.log('colorScale', colorScale(keys[0]))
-		console.log('keys', keys)
-	}
 
 	// used to offset bars - 1 comes from the line width.
 	let horizontalBarOffset = config.yAxis.size;
 
+	// font size and text spacing used for centering text on bar
+	let horizBarLabelPadding = null;
+	if (config.fontSize === "small") {
+		horizBarLabelPadding = 16;
+	} else if (config.fontSize === "medium") {
+		horizBarLabelPadding = 18;
+	} else {
+		horizBarLabelPadding = 20;
+	}
+
+	React.useEffect(() => {
+		if(config.barHeight < 25) {
+			config.barHeight = 25
+		}
+	}, [config]);
+
 	return width > 0 && (
 		<>
-		<svg
-			id="cdc-visualization__horizontal-bar-chart"
-			width={width}
-			height={height}>
 			<Group>
 				return (
 					<BarGroupHorizontal
@@ -87,15 +62,70 @@ const HorizontalBarChart = ({width, height}) => {
 					>
 						{(barGroups) =>
 							barGroups.map((barGroup, barGroupIndex) => {
-								console.log('barGroup', barGroup)
+								//console.log('barGroup', barGroup)
 								return (
+									<>
 									<Group
 										key={`bar-group-horizontal-${barGroup.index}-${barGroup.y0}`}
 										top={barGroup.y0}
 									>
-										{barGroup.bars.map((bar, index) => {
-											console.log('bar', bar)
-											return (
+									{barGroup.bars.map((bar, index) => {
+
+										setLocalBarHeight(bar.height)
+
+										// Label Settings
+										const isLabelOnBar = config.yAxis.displayNumbersOnBar === true;
+										const isLabelBelowBar = config.yAxis.labelPlacement === "Below Bar";
+										const isLabelOnYAxis = config.yAxis.labelPlacement === "On Date/Category Axis";
+										const isLabelMissing = !config.yAxis.labelPlacement;
+
+
+										// Set label color
+										let labelColor = "#000000";
+										if (chroma.contrast(labelColor, bar.color) < 4.9) {
+											labelColor = '#FFFFFF';
+										}
+										
+										// Tooltips
+										let yAxisValue = formatNumber(bar.value);
+										let xAxisValue = data[barGroup.index][config.runtime.originalXAxis.dataKey];
+										let yAxisTooltip = config.runtime.yAxis.label ? `${config.runtime.yAxis.label}: ${yAxisValue}` : yAxisValue
+										let xAxisTooltip = config.runtime.xAxis.label ? `${config.runtime.xAxis.label}: ${xAxisValue}` : xAxisValue
+										const tooltip = `<div>
+														${yAxisTooltip}<br />
+														${xAxisTooltip}<br />
+														${config.seriesLabel ? `${config.seriesLabel}: ${bar.key}` : ''}`
+
+										// Bar Settings
+										let transparentBar = config.legend.behavior === 'highlight' && seriesHighlight.length > 0 && seriesHighlight.indexOf(bar.key) === -1;
+										let displayBar = config.legend.behavior === 'highlight' || seriesHighlight.length === 0 || seriesHighlight.indexOf(bar.key) !== -1;
+
+										const barsPerGroup = config.series.length;
+										let barHeight = config.barHeight ? config.barHeight : 25;
+										let barPadding = barHeight;
+
+										if (isLabelBelowBar || isLabelMissing || isLabelOnYAxis) {
+											if (barHeight < 40) {
+												config.barPadding = barPadding * 1.4;
+											} else {
+												config.barPadding = barPadding;
+											}
+										} else {
+											config.barPadding = barPadding / 2;
+										}
+
+										//config.barPadding = barPadding + barTextPadding;
+
+										if (config.isLollipopChart && config.yAxis.labelPlacement === 'Below Bar') {
+											config.barPadding = config.barPadding + 7;
+										}
+										config.barHeight = config.isLollipopChart ? lollipopBarWidth : barHeight;
+
+										config.height = (barsPerGroup * barHeight) * barGroups.length + (config.barPadding * barGroups.length);
+
+										
+										return (
+											<>
 												<Bar
 													className="bar"
 													key={`horizontal_bar--${index}`}
@@ -104,10 +134,92 @@ const HorizontalBarChart = ({width, height}) => {
 													width={bar.width}
 													height={bar.height}
 													fill={bar.color}
+													stroke="#333"
+													//strokeWidth={config.barBorderThickness || 1}
+													opacity={transparentBar ? 0.5 : 1}
+													display={displayBar ? 'block' : 'none'}
+													data-tip={tooltip}
+													data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
 												/>
-											)}
+
+												{/* Lollipop Shapes: circle */}
+												{ config.isLollipopChart && config.lollipopShape === 'circle' &&
+													<circle
+														cx={bar.width + config.yAxis.size }
+														cy={bar.height }
+														r={lollipopShapeSize}
+														fill={bar.color}
+														key={`circle--${bar.index}`}
+														data-tip={tooltip}
+														data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
+														style={{ 'opacity': 1, filter: 'unset' }}
+													/>
+												}
+
+												{/* Lollipop Shapes: square */}
+												{config.isLollipopChart && config.lollipopShape === 'square' &&
+													<rect
+														x={ bar.width + config.yAxis.size}
+														y={ bar.height }
+														width={lollipopShapeSize}
+														height={lollipopShapeSize}
+														fill={bar.color}
+														key={`circle--${bar.index}`}
+														data-tip={tooltip}
+														data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
+														style={{ 'opacity': 1, filter: 'unset' }}
+													/>
+												}
+
+												{/* Label On Bar > Long Bars > Labels appear inside of bar */}
+												{(bar.width > 50 && isLabelOnBar) &&
+													<Group>
+														<Text
+															x={ bar.width + config.yAxis.size - barTextPadding }
+															y={bar.height / 2 + (bar.height * bar.index) } //  bar.height/2 === (center on bar). bar.Height * bar.index() === the y position of bar
+															textAnchor="end"
+															verticalAnchor="middle"
+															opacity={transparentBar ? 0.5 : 1}
+															display={displayBar ? 'block' : 'none'}
+															fill={labelColor}
+														>
+															{yAxisValue}
+														</Text>
+													</Group>
+												}
+												
+												{/* Label On Bar > Short Bars > Labels appear to the right of the bar */}
+												{ (bar.width < 50 && isLabelOnBar) &&
+													<Group>
+														<Text
+															x={ bar.width + config.yAxis.size + barTextPadding }
+															y={ bar.height/2 + (bar.height * bar.index) }
+															fill={'#333333'}
+															textAnchor="start"
+															verticalAnchor="middle"
+															opacity={transparentBar ? 0.5 : 1}
+															display={displayBar ? 'block' : 'none'}
+														>
+															{yAxisValue}
+														</Text>
+													</Group>
+												}
+											</>
 										)}
+									)}
 									</Group>
+										{/* Label Below Bar */}
+										{config.yAxis.labelPlacement === 'Below Bar' &&
+											<Text
+												x={0 + config.yAxis.size + barTextPadding } // padding
+												y={barGroup.y0 + (barGroup.bars.length * localBarHeight + 12 ) + barTextPadding }
+												verticalAnchor={"end"}
+												textAnchor={"start"}
+											>
+												{data[barGroup.index][config.runtime.originalXAxis.dataKey]}
+											</Text>
+										}
+									</>
 								)
 							}
 							)
@@ -115,19 +227,6 @@ const HorizontalBarChart = ({width, height}) => {
 					</BarGroupHorizontal>
 				)
 			</Group>
-				<AxisLeft
-					left={config.yAxis.size}
-					scale={yScale}
-					stroke={'#333'}
-					tickStroke={'#333'}
-					tickLabelProps={() => ({
-						fill: '#333',
-						fontSize: 11,
-						textAnchor: 'end',
-						dy: '0.33em',
-					})}
-				/>
-			</svg>
 		</>
 	);
 }

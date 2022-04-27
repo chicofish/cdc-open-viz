@@ -15,7 +15,8 @@ export default {
   },
   yAxis: {
     size: 50,
-    gridLines: false
+    gridLines: false,
+    labelPlacement: "On Date/Category Axis"
   },
   barThickness: 0.35,
   height: 300,

@@ -551,9 +551,9 @@ const EditorPanel = () => {
                   </AccordionItemButton>
                 </AccordionItemHeading>
                 <AccordionItemPanel>
-                  <Select value={config.visualizationType} fieldName="visualizationType" label="Chart Type" updateField={updateField} options={['Pie', 'Line', 'Bar', 'Combo' ]} />
-                  {config.visualizationType === "Bar" && <Select value={config.visualizationSubType || "Regular"} fieldName="visualizationSubType" label="Chart Subtype" updateField={updateField} options={['regular', 'stacked', 'horizontal']} />}
-                  { (config.visualizationType === "Bar" && config.visualizationSubType === "horizontal") &&
+                  <Select value={config.visualizationType} fieldName="visualizationType" label="Chart Type" updateField={updateField} options={['Pie', 'Line', 'Bar', 'Combo', 'Horizontal Bar Chart' ]} />
+                  { (config.visualizationType === "Bar") && <Select value={config.visualizationSubType || "Regular"} fieldName="visualizationSubType" label="Chart Subtype" updateField={updateField} options={['regular', 'stacked', 'horizontal']} />}
+                  { ((config.visualizationType === "Bar" && config.visualizationSubType === "horizontal") || config.visualizationType === 'Horizontal Bar Chart') &&
                     <Select value={config.yAxis.labelPlacement || "Below Bar"} section="yAxis" fieldName="labelPlacement" label="Label Placement" updateField={updateField} options={['Below Bar', 'On Date/Category Axis' ]} />
                   }
                   { (showLollipopCheckbox()) &&
@@ -1009,7 +1009,7 @@ const EditorPanel = () => {
                   { (config.visualizationSubType === "horizontal" && config.yAxis.labelPlacement !== "On Bar") &&
                     <TextField type="number" value={ config.barHeight || "25" } fieldName="barHeight" label="Bar Thickness" updateField={updateField} min="15"/>
                   }
-                  { ((config.visualizationType === "Bar" && config.visualizationSubType !== "horizontal") || config.visualizationType === "Combo" ) &&
+                  { ((config.visualizationType === "Bar") || config.visualizationType === "Combo" || config.visualizationType === 'Horizontal Bar Chart') &&
                     <TextField value={config.barThickness} type="number" fieldName="barThickness" label="Bar Thickness" updateField={updateField} />
                   }
                 </AccordionItemPanel>

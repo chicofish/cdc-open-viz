@@ -37,9 +37,9 @@ export default function LinearChart() {
   let yScale;
   let seriesScale;
 
-	function max(arr, fn)  {
-		return Math.max(...arr.map(fn));
-	}
+  const showHorizontalBarChartLeftLabels = config.visualizationType === 'Horizontal Bar Chart' && config.yAxis.labelPlacement === 'On Date/Category Axis';
+  const showHorizontalBarChartLeftTicks = config.visualizationType === 'Horizontal Bar Chart' && config.yAxis.labelPlacement === 'On Date/Category Axis'
+
 
   if (data) {
     let min = config.runtime.yAxis.min !== undefined ? config.runtime.yAxis.min : Math.min(...data.map((d) => Math.min(...config.runtime.seriesKeys.map((key) => Number(d[key])))));
@@ -83,6 +83,7 @@ export default function LinearChart() {
     let xAxisDataMapped = data.map(d => getXAxisData(d));
 
     if(config.runtime.horizontal){
+
       xScale = scaleLinear<number>({
         domain: [min, max],
         range: [0, xMax]
@@ -133,46 +134,45 @@ export default function LinearChart() {
 
   }
   }
-
-  if(config.visualizationType === 'HorizontalBarChart') {
-    /**
-	 * todo: add Lollipop items
-	 * todo: update axis/ticks in linear chart
-	 */
-
-	let categoryKey = config.xAxis.dataKey;
-	let metricKey = config.series[0].dataKey;
-	const keys = config.series.map( series => series.dataKey);
-    console.log('testing')
-
-
-	const getCategoryScale = (data) => data[categoryKey]
-
-
-	// Metric value on max
-	xScale = scaleLinear({
-		domain: [0, max(data, (d) => max(keys, (key) => Number(d[key])))],
-		range: [0, width]
-	});
-	
-	
-	// Category value as map
-	// Metric value on sort
-	yScale = scaleBand({
-		domain: data.map(getCategoryScale),
-		padding: 0.2
-	});
-
-	seriesScale = scaleBand({
-		domain: keys,
-	});
-
-  }
   
 
   useEffect(() => {
     ReactTooltip.rebuild();
   });
+
+  if(config.visualizationType === 'Horizontal Bar Chart') {
+    const max = (arr, fn) =>  {
+      return Math.max(...arr.map(fn));
+    }
+    
+    let categoryKey = config.xAxis.dataKey;
+      let metricKey = config.series[0].dataKey;
+      const keys = config.series.map( series => series.dataKey);
+      const getCategoryScale = (data) => data[categoryKey]
+
+
+      // Metric value on max
+      xScale = scaleLinear({
+        domain: [0, max(data, (d) => max(keys, (key) => Number(d[key])))],
+        range: [0, width]
+      });
+      
+      
+      // Category value as map
+      // Metric value on sort
+      yScale = scaleBand({
+        domain: data.map(getCategoryScale),
+        padding: config.barThickness,
+      });
+
+      seriesScale = scaleBand({
+        domain: keys,
+      });
+
+      yScale.rangeRound([0, yMax]);
+      seriesScale.rangeRound([0, yScale.bandwidth()]);
+      xScale.rangeRound([0, xMax]);
+  }
 
 
   return (
@@ -214,8 +214,8 @@ export default function LinearChart() {
           }) : '' }
 
           {/* Y axis */}
-          {(!config.yAxis.hideAxis && config.visualizationType !== "HorizontalBarChart") && (
-            <AxisLeft
+          {(!config.yAxis.hideAxis) && (
+          <AxisLeft
             scale={yScale}
             left={config.runtime.yAxis.size}
             label={config.runtime.horizontal ? config.runtime.yAxis.label : config.runtime.xAxis.label}
@@ -223,7 +223,6 @@ export default function LinearChart() {
             numTicks={config.runtime.yAxis.numTicks || undefined}
           >
             {props => {
-              console.log('p', props)
               const axisCenter = config.runtime.horizontal ? (props.axisToPoint.y - props.axisFromPoint.y) / 2 : (props.axisFromPoint.y - props.axisToPoint.y) / 2;
               const horizontalTickOffset = yMax / props.ticks.length / 2 - (yMax / props.ticks.length * (1 - config.barThickness)) + 5;
               return (
@@ -234,12 +233,15 @@ export default function LinearChart() {
                         key={`vx-tick-${tick.value}-${i}`}
                         className={'vx-axis-tick'}
                       >
-                        <Line
-                          from={tick.from}
-                          to={tick.to}
-                          stroke="#333"
-                          display={config.runtime.horizontal ? 'none' : 'block'}
-                        />
+                        { (showHorizontalBarChartLeftTicks || config.visualizationType !== 'Horizontal Bar Chart') &&
+                          <Line
+                            from={tick.from}
+                            to={tick.to}
+                            stroke="#333"
+                            display={config.runtime.horizontal ? 'none' : 'block'}
+                          />
+                        }
+
                         { config.runtime.yAxis.gridLines ? (
                           <Line
                             from={{x: tick.from.x + xMax, y: tick.from.y}}
@@ -249,11 +251,21 @@ export default function LinearChart() {
                           ) : ''
                         }
 
-                        { config.visualizationSubType === "horizontal" && (config.yAxis.labelPlacement === 'On Date/Category Axis' ) &&
+                        {/* Bar Chart > Left Axis > Labels */}
+                        { config.visualizationSubType === "horizontal" && (config.yAxis.labelPlacement === 'On Date/Category Axis' ) && config.visualizationType !== 'Horizontal Bar Chart' &&
                             // 17 is a magic number from the offset in barchart.
                             <Text
                               transform={`translate(${tick.to.x - 5}, ${ config.isLollipopChart  ?  tick.from.y  : tick.from.y  - 17 }) rotate(-${config.runtime.horizontal ? config.runtime.yAxis.tickRotation : 0})`}
                               verticalAnchor={ config.isLollipopChart ? "middle" : "middle"}
+                              textAnchor={"end"}
+                            >{tick.formattedValue}</Text>
+                        }
+
+                        {/* Horizontal Bar Chart > Left Axis > Label Text */}
+                        {showHorizontalBarChartLeftLabels &&
+                          <Text
+                              transform={`translate(${tick.to.x - 5}, ${ tick.from.y - 1}) rotate(-${config.runtime.horizontal ? config.runtime.yAxis.tickRotation : 0})`}
+                              verticalAnchor={'middle'}
                               textAnchor={"end"}
                             >{tick.formattedValue}</Text>
                         }
@@ -358,7 +370,8 @@ export default function LinearChart() {
             }}
           </AxisBottom>
           )}
-
+          
+          {/* Paired Bar > Bottom Axis */}
           {config.visualizationType === 'Paired Bar' &&
           <>
           <AxisBottom
@@ -455,22 +468,24 @@ export default function LinearChart() {
           </AxisBottom>
           </>
           }
+
+          {/* Paired Bar chart */}
           { config.visualizationType === 'Paired Bar' && (
             <PairedBarChart  width={xMax} height={yMax} />
           ) }
           
           {/* Horizontal Bar chart */}
-          { (config.visualizationType === 'HorizontalBarChart') && (
-            <HorizontalBarChart width={xMax} height={yMax} yScale={yScale} xScale={xScale} seriesScale={seriesScale} />
+          { (config.visualizationType === 'Horizontal Bar Chart') && (
+            <HorizontalBarChart width={xMax} height={yMax} xScale={xScale} yScale={yScale} seriesScale={seriesScale}/>
           )}
 
           {/* Vertical Bar chart */}
-          { (config.visualizationType !== 'Line' && config.visualizationType !== 'Paired Bar' && config.visualizationType !== 'HorizontalBarChart') && (
+          { (config.visualizationType !== 'Line' && config.visualizationType !== 'Paired Bar' && config.visualizationType !== 'Horizontal Bar Chart') && (
             <BarChart xScale={xScale} yScale={yScale} seriesScale={seriesScale} xMax={xMax} yMax={yMax} getXAxisData={getXAxisData} getYAxisData={getYAxisData} />
           )}
 
           {/* Line chart */}
-          { (config.visualizationType !== 'Bar' && config.visualizationType !== 'Paired Bar' && config.visualizationType !== 'HorizontalBarChart') && (
+          { (config.visualizationType !== 'Bar' && config.visualizationType !== 'Paired Bar' && config.visualizationType !== 'Horizontal Bar Chart') && (
             <LineChart xScale={xScale} yScale={yScale} getXAxisData={getXAxisData} getYAxisData={getYAxisData} />
           )}
       </svg>

@@ -4,6 +4,7 @@ import { Group } from '@visx/group';
 import { BarGroup, BarStack } from '@visx/shape';
 import { Text } from '@visx/text';
 import chroma from 'chroma-js';
+import useLollipopChart from '../hooks/useLollipopChart';
 
 import ErrorBoundary from '@cdc/core/components/ErrorBoundary';
 
@@ -13,9 +14,8 @@ import ReactTooltip from 'react-tooltip';
 export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getXAxisData, getYAxisData }) {
   const { transformedData: data, colorScale, seriesHighlight, config, formatNumber, updateConfig, setParentConfig } = useContext<any>(Context);
   const { visualizationSubType } = config;
+  const { lollipopBarWidth, lollipopShapeSize, handleBarColor } = useLollipopChart();
 
-  const lollipopBarWidth = config.lollipopSize === 'large' ? 7 : config.lollipopSize === 'medium' ? 6 : 5;
-  const lollipopShapeSize = config.lollipopSize === 'large' ? 14 : config.lollipopSize === 'medium' ? 12 : 10;
 
   const isLabelBelowBar = config.yAxis.labelPlacement === "Below Bar";
   const isLabelOnYAxis = config.yAxis.labelPlacement === "On Date/Category Axis";
@@ -26,25 +26,6 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
   // Using State
   const [horizBarHeight, setHorizBarHeight] = useState(null);
   const [textWidth, setTextWidth] = useState(null);
-
-  useEffect(() => {
-    if(config.visualizationSubType === "horizontal" && !config.yAxis.labelPlacement) {
-      updateConfig({
-        ...config,
-        yAxis: {
-          ...config,
-          labelPlacement: "Below Bar"
-        }
-      })
-    }
-  }, [config, updateConfig]);
-
-
-  useEffect(() => {
-    if(config.isLollipopChart === false) {
-      updateConfig({ ...config, barHeight: 25 })
-    }
-  }, [config.isLollipopChart]);
 
   return (
     <ErrorBoundary component="BarChart">
@@ -211,8 +192,7 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
                         y={config.runtime.horizontal ? barWidth * (barGroup.bars.length - bar.index - 1) + (config.isLollipopChart && isLabelOnYAxis ? offset : 0) : barY }
                         width={config.runtime.horizontal ?  bar.y : barWidth}
                         height={config.runtime.horizontal ? barWidth : barHeight}
-                        fill={config.isLollipopChart && config.lollipopColorStyle === 'regular' ? barColor : 
-                              config.isLollipopChart && config.lollipopColorStyle === 'two-tone' ? chroma(barColor).brighten(1) : barColor }
+                        fill={ handleBarColor(barColor) }
                         stroke="#333"
                         strokeWidth={config.isLollipopChart ? 0 : config.barBorderThickness || 1}
                         opacity={transparentBar ? 0.5 : 1}
@@ -220,7 +200,7 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
                         data-tip={tooltip}
                         data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
                       />
-                      {config.isLollipopChart && config.lollipopShape === 'circle' &&
+                      {/* {config.isLollipopChart && config.lollipopShape === 'circle' &&
                         <circle 
                           cx={config.visualizationSubType === 'horizontal' ? bar.y : barWidth * (barGroup.bars.length - bar.index - 1) + (isLabelBelowBar && config.visualizationSubType === 'horizontal' ? 0 : offset) + lollipopShapeSize/3.5}
                           cy={config.visualizationSubType === 'horizontal' ? lollipopShapeSize/3.5 + (isLabelBelowBar && config.visualizationSubType === 'horizontal' ? 0: offset) : bar.y}
@@ -231,8 +211,8 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
                           data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
                           style={{ 'opacity': 1, filter: 'unset' }}
                         />
-                      }
-                      {config.isLollipopChart && config.lollipopShape === 'square' &&
+                      } */}
+                      {/* {config.isLollipopChart && config.lollipopShape === 'square' &&
                         <rect 
                           x={
                             (config.visualizationSubType === 'horizontal' && bar.y > 10) ? bar.y - lollipopShapeSize / 2 : (config.visualizationSubType === 'horizontal' && bar.y < 10) ? 0 :
@@ -248,8 +228,8 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
                           data-for={`cdc-open-viz-tooltip-${config.runtime.uniqueId}`}
                           style={{ 'opacity': 1, filter: 'unset' }}
                         />
-                      }
-                      {visualizationSubType === "horizontal" && textWidth + 100 < bar.y ?
+                      } */}
+                      { (visualizationSubType === "horizontal" || config.visualizationType === 'Horizontal Bar Chart') && textWidth + 100 < bar.y ?
                         config.yAxis.labelPlacement === "On Bar" &&
                           <Group>
                               <Text
