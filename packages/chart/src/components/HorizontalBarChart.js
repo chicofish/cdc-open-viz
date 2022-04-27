@@ -3,6 +3,7 @@ import { Group } from '@visx/group';
 import { BarGroupHorizontal, Bar } from '@visx/shape';
 import { scaleLinear, scaleBand } from '@visx/scale';
 import Context from '../context';
+import { AxisLeft } from '@visx/axis';
 
 const HorizontalBarChart = ({width, height}) => {
 
@@ -27,7 +28,7 @@ const HorizontalBarChart = ({width, height}) => {
 
 
 	// Metric value on max
-	const xScale2 = scaleLinear({
+	const xScale = scaleLinear({
 		domain: [0, max(data, (d) => max(keys, (key) => Number(d[key])))],
 		range: [0, width]
 	});
@@ -47,7 +48,7 @@ const HorizontalBarChart = ({width, height}) => {
 	// update scale output dimensions
 	yScale.rangeRound([0, height]);
 	seriesScale.rangeRound([0, yScale.bandwidth()]);
-	xScale2.rangeRound([0, width]);
+	xScale.rangeRound([0, width]);
 
 
 	const DEBUG = true;
@@ -58,13 +59,13 @@ const HorizontalBarChart = ({width, height}) => {
 		console.log('height', height)
 		console.log('yScale @ 0', yScale(data[0][categoryKey]))
 		console.log('yScale height', yScale.bandwidth())
-		console.log('xScale/barwidth', xScale2(data[0][metricKey]))
+		console.log('xScale/barwidth', xScale(data[0][metricKey]))
 		console.log('colorScale', colorScale(keys[0]))
 		console.log('keys', keys)
 	}
 
 	// used to offset bars - 1 comes from the line width.
-	let horizontalBarOffset = config.yAxis.size + 1;
+	let horizontalBarOffset = config.yAxis.size;
 
 	return width > 0 && (
 		<>
@@ -73,47 +74,59 @@ const HorizontalBarChart = ({width, height}) => {
 			width={width}
 			height={height}>
 			<Group>
-					return (
-						<BarGroupHorizontal
-							data={data}
-							keys={keys}
-							width={width}
-							color={colorScale}
-							y0={getCategoryScale}
-							y0Scale={yScale}
-							y1Scale={seriesScale}
-							xScale={xScale2}
-						>
-							{(barGroups) =>
-								barGroups.map((barGroup, barGroupIndex) => {
-									console.log('barGroup', barGroup)
-									return (
-										<Group
-											key={`bar-group-horizontal-${barGroup.index}-${barGroup.y0}`}
-											top={barGroup.y0}
-										>
-											{barGroup.bars.map((bar, index) => {
-												console.log('bar', bar)
-												return (
-													<Bar
-														className="bar"
-														key={`horizontal_bar--${index}`}
-														x={bar.x + horizontalBarOffset}
-														y={bar.y}
-														width={bar.width}
-														height={bar.height}
-														fill={bar.color}
-													/>
-												)}
+				return (
+					<BarGroupHorizontal
+						data={data}
+						keys={keys}
+						width={width}
+						color={colorScale}
+						y0={getCategoryScale}
+						y0Scale={yScale}
+						y1Scale={seriesScale}
+						xScale={xScale}
+					>
+						{(barGroups) =>
+							barGroups.map((barGroup, barGroupIndex) => {
+								console.log('barGroup', barGroup)
+								return (
+									<Group
+										key={`bar-group-horizontal-${barGroup.index}-${barGroup.y0}`}
+										top={barGroup.y0}
+									>
+										{barGroup.bars.map((bar, index) => {
+											console.log('bar', bar)
+											return (
+												<Bar
+													className="bar"
+													key={`horizontal_bar--${index}`}
+													x={bar.x + horizontalBarOffset}
+													y={bar.y}
+													width={bar.width}
+													height={bar.height}
+													fill={bar.color}
+												/>
 											)}
-										</Group>
-									)
-								}
+										)}
+									</Group>
 								)
 							}
-						</BarGroupHorizontal>
-					)
+							)
+						}
+					</BarGroupHorizontal>
+				)
 			</Group>
+				<AxisLeft
+					left={config.yAxis.size}
+					scale={yScale}
+					stroke={'#333'}
+					tickStroke={'#333'}
+					tickLabelProps={() => ({
+						fill: '#333',
+						fontSize: 11,
+						textAnchor: 'end',
+						dy: '0.33em',
+					})}
+				/>
 			</svg>
 		</>
 	);

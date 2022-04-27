@@ -4,7 +4,7 @@ import ReactTooltip from 'react-tooltip';
 import { Group } from '@visx/group';
 import { Line } from '@visx/shape';
 import { Text } from '@visx/text';
-import { scaleLinear, scalePoint } from '@visx/scale';
+import { scaleLinear, scalePoint, scaleBand } from '@visx/scale';
 import { AxisLeft, AxisBottom } from '@visx/axis';
 
 import BarChart from './BarChart';
@@ -37,7 +37,9 @@ export default function LinearChart() {
   let yScale;
   let seriesScale;
 
-
+	function max(arr, fn)  {
+		return Math.max(...arr.map(fn));
+	}
 
   if (data) {
     let min = config.runtime.yAxis.min !== undefined ? config.runtime.yAxis.min : Math.min(...data.map((d) => Math.min(...config.runtime.seriesKeys.map((key) => Number(d[key])))));
@@ -132,6 +134,40 @@ export default function LinearChart() {
   }
   }
 
+  if(config.visualizationType === 'HorizontalBarChart') {
+    /**
+	 * todo: add Lollipop items
+	 * todo: update axis/ticks in linear chart
+	 */
+
+	let categoryKey = config.xAxis.dataKey;
+	let metricKey = config.series[0].dataKey;
+	const keys = config.series.map( series => series.dataKey);
+    console.log('testing')
+
+
+	const getCategoryScale = (data) => data[categoryKey]
+
+
+	// Metric value on max
+	xScale = scaleLinear({
+		domain: [0, max(data, (d) => max(keys, (key) => Number(d[key])))],
+		range: [0, width]
+	});
+	
+	
+	// Category value as map
+	// Metric value on sort
+	yScale = scaleBand({
+		domain: data.map(getCategoryScale),
+		padding: 0.2
+	});
+
+	seriesScale = scaleBand({
+		domain: keys,
+	});
+
+  }
   
 
   useEffect(() => {
@@ -178,19 +214,18 @@ export default function LinearChart() {
           }) : '' }
 
           {/* Y axis */}
-          {!config.yAxis.hideAxis && (
+          {(!config.yAxis.hideAxis && config.visualizationType !== "HorizontalBarChart") && (
             <AxisLeft
             scale={yScale}
             left={config.runtime.yAxis.size}
-            label={config.runtime.yAxis.label}
+            label={config.runtime.horizontal ? config.runtime.yAxis.label : config.runtime.xAxis.label}
             stroke="#333"
             numTicks={config.runtime.yAxis.numTicks || undefined}
           >
             {props => {
-              const lollipopShapeSize = config.lollipopSize === 'large' ? 14 : config.lollipopSize === 'medium' ? 12 : 10;
+              console.log('p', props)
               const axisCenter = config.runtime.horizontal ? (props.axisToPoint.y - props.axisFromPoint.y) / 2 : (props.axisFromPoint.y - props.axisToPoint.y) / 2;
               const horizontalTickOffset = yMax / props.ticks.length / 2 - (yMax / props.ticks.length * (1 - config.barThickness)) + 5;
-              const belowBarPaddingFromTop = 9;
               return (
                 <Group className="left-axis">
                   {props.ticks.map((tick, i) => {
@@ -270,7 +305,7 @@ export default function LinearChart() {
           <AxisBottom
             top={yMax}
             left={config.runtime.yAxis.size}
-            label={config.runtime.xAxis.label}
+            label={config.runtime.horizontal ? config.runtime.xAxis.label : config.runtime.yAxis.label}
             tickFormat={config.runtime.xAxis.type === 'date' ? formatDate : (tick) => tick}
             scale={xScale}
             stroke="#333"
@@ -426,7 +461,7 @@ export default function LinearChart() {
           
           {/* Horizontal Bar chart */}
           { (config.visualizationType === 'HorizontalBarChart') && (
-            <HorizontalBarChart width={xMax} height={yMax} xScale={xScale} yScale={yScale} seriesScale={seriesScale} xMax={xMax} yMax={yMax} getXAxisData={getXAxisData} getYAxisData={getYAxisData} />
+            <HorizontalBarChart width={xMax} height={yMax} yScale={yScale} xScale={xScale} seriesScale={seriesScale} />
           )}
 
           {/* Vertical Bar chart */}
