@@ -113,7 +113,7 @@ export default function LinearChart() {
       });
     }
 
-      
+  // Scaling for Paired Bars    
   if(config.visualizationType === 'Paired Bar') {
 
 
@@ -133,22 +133,18 @@ export default function LinearChart() {
     })
 
   }
-  }
-  
 
-  useEffect(() => {
-    ReactTooltip.rebuild();
-  });
-
+  // Scaling for Horizontal Bar Chart
   if(config.visualizationType === 'Horizontal Bar Chart') {
+    
     const max = (arr, fn) =>  {
       return Math.max(...arr.map(fn));
     }
-    
+  
     let categoryKey = config.xAxis.dataKey;
-      let metricKey = config.series[0].dataKey;
-      const keys = config.series.map( series => series.dataKey);
-      const getCategoryScale = (data) => data[categoryKey]
+    let metricKey = config.series[0].dataKey;
+    const keys = config.series.map( series => series.dataKey);
+    const getCategoryScale = (data) => data[categoryKey]
 
 
       // Metric value on max
@@ -157,24 +153,63 @@ export default function LinearChart() {
         range: [0, width]
       });
       
+      let useBandScale = false;
       
       // Category value as map
       // Metric value on sort
-      yScale = scaleBand({
-        domain: data.map(getCategoryScale),
-        padding: 0.35,
-        range: [config.height, 0]
-      });
+      if(useBandScale) {
+        yScale = scaleBand({
+          domain: data.map(getCategoryScale),
+          padding: 0.35,
+          range: [config.height, 0]
+        });
 
-      seriesScale = scaleBand({
-        domain: keys,
-      });
+        seriesScale = scaleBand({
+          domain: keys,
+        });
+      
+        yScale.rangeRound([0, yMax]);
+        seriesScale.rangeRound([0, yScale.bandwidth()]);
+        xScale.rangeRound([0, xMax]);
+      } else {
 
-      yScale.rangeRound([0, yMax]);
-      seriesScale.rangeRound([0, yScale.bandwidth()]);
-      xScale.rangeRound([0, xMax]);
+        const getYAxisData = (d: any, seriesKey: string) => d[seriesKey];
+        let yAxisDataMapped = data.map(d => getYAxisData(d, categoryKey));
+  
+
+        // Metric value on max
+        // This is functioning properly
+        xScale = scaleLinear({
+          domain: [0, max(data, (d) => max(keys, (key) => Number(d[key])))],
+          range: [0, xMax]
+        });
+        
+        seriesScale = scaleLinear({
+          domain: yAxisDataMapped,
+        });
+        
+        console.log('yaxisdata', yAxisDataMapped)
+        console.log('ymax', yMax)
+        // Bumps bars to top.
+        yScale = scalePoint({
+          domain: yAxisDataMapped,
+          range: [0,yMax],
+        })
+
+        yScale.rangeRound([0, yMax]);
+        xScale.rangeRound([0, xMax]);
+        seriesScale.rangeRound([0, yMax])
+
+      }
+
   }
+} // if(data)
 
+
+
+  useEffect(() => {
+    ReactTooltip.rebuild();
+  });
 
   return (
     <ErrorBoundary component="LinearChart">
@@ -253,7 +288,7 @@ export default function LinearChart() {
                         }
 
                         {/* Bar Chart > Left Axis > Labels */}
-                        { config.visualizationSubType === "horizontal" && (config.yAxis.labelPlacement === 'On Date/Category Axis' ) && config.visualizationType !== 'Horizontal Bar Chart' &&
+                        { (config.visualizationSubType === "horizontal" && config.yAxis.labelPlacement === 'On Date/Category Axis' && config.visualizationType !== 'Horizontal Bar Chart') &&
                             // 17 is a magic number from the offset in barchart.
                             <Text
                               transform={`translate(${tick.to.x - 5}, ${ config.isLollipopChart  ?  tick.from.y  : tick.from.y  - 17 }) rotate(-${config.runtime.horizontal ? config.runtime.yAxis.tickRotation : 0})`}

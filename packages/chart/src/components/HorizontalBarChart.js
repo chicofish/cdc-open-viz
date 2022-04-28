@@ -13,7 +13,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 
 	// Kind of akward, we have config.barHeight but I think it's getting changed by yScale
 	// This is used to retreive the true bar height so we can add text below the bars
-	const [ localBarHeight, setLocalBarHeight ] = useState(null)
+	//const [ localBarHeight, setLocalBarHeight ] = useState(null)
 
 	// Padding on labels inner/outer on bars.
 	const barTextPadding = 5;
@@ -22,6 +22,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 	 * todo: change Horizontal Bar Group from band
 	 * todo: fix/add lollipop items
 	 * todo: display numbers on bar / after bar lollipop change
+	 * todo: animations!
 	 */
 
 	let categoryKey = config.xAxis.dataKey;
@@ -41,6 +42,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 		horizBarLabelPadding = 20;
 	}
 
+	// Restrict min height of horizontal bar to 25.
 	React.useEffect(() => {
 		if(config.barHeight <= 25) {
 			config.barHeight = 25
@@ -72,7 +74,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 									>
 									{barGroup.bars.map((bar, index) => {
 
-										setLocalBarHeight(bar.height)
+										//setLocalBarHeight(bar.height)
 
 										// Label Settings
 										const isLabelOnBar = config.yAxis.displayNumbersOnBar === true;
@@ -119,6 +121,8 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 										if (config.isLollipopChart && config.yAxis.labelPlacement === 'Below Bar') {
 											config.barPadding = config.barPadding + 7;
 										}
+										
+										// If lollipop chart type use lollipop width.
 										config.barHeight = config.isLollipopChart ? lollipopBarWidth : barHeight;
 
 										config.height = (barsPerGroup * barHeight) * barGroups.length + (config.barPadding * barGroups.length);
@@ -128,11 +132,11 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 											<>
 												<Bar
 													className="bar"
-													key={`horizontal_bar--${index}`}
-													x={bar.x + horizontalBarOffset}
-													y={bar.y}
+													key={`horizontal_bar--${index}--${barGroupIndex}`}
+													x={bar.x + horizontalBarOffset + 5}
+													y={ barHeight * (barGroup.bars.length - bar.index - 1)  }
 													width={bar.width}
-													height={bar.height}
+													height={barHeight}
 													fill={bar.color}
 													stroke="#333"
 													//strokeWidth={config.barBorderThickness || 1}
@@ -173,7 +177,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 
 												{/* Label On Bar > Long Bars > Labels appear inside of bar */}
 												{(bar.width > 50 && isLabelOnBar) &&
-													<Group>
+													<Group key={`group--${barGroupIndex}-${bar.index}`}>
 														<Text
 															x={ bar.width + config.yAxis.size - barTextPadding }
 															y={bar.height / 2 + (bar.height * bar.index) } //  bar.height/2 === (center on bar). bar.Height * bar.index() === the y position of bar
@@ -190,7 +194,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 												
 												{/* Label On Bar > Short Bars > Labels appear to the right of the bar */}
 												{ (bar.width < 50 && isLabelOnBar) &&
-													<Group>
+													<Group key={`key--${barGroupIndex}-${bar.index}`}>
 														<Text
 															x={ bar.width + config.yAxis.size + barTextPadding }
 															y={ bar.height/2 + (bar.height * bar.index) }
@@ -212,8 +216,9 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 										{config.yAxis.labelPlacement === 'Below Bar' &&
 											<Text
 												x={0 + config.yAxis.size + barTextPadding } // padding
-												y={barGroup.y0 + (barGroup.bars.length * localBarHeight + 12 ) + barTextPadding }
+												y={barGroup.y0 + (barGroup.bars.length + 12 ) + barTextPadding }
 												verticalAnchor={"end"}
+												key={`text--${data[barGroup.index][config.runtime.originalXAxis.dataKey]}`}
 												textAnchor={"start"}
 											>
 												{data[barGroup.index][config.runtime.originalXAxis.dataKey]}

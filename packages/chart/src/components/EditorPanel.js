@@ -533,6 +533,7 @@ const EditorPanel = () => {
   if(config.isLollipopChart && config?.series?.length === 0) {
     config.runtime.editorErrorMessage = 'Add a data series';
   }
+  
 
   return (
     <ErrorBoundary component="EditorPanel">
@@ -1006,8 +1007,8 @@ const EditorPanel = () => {
                       <TextField value={config.dataCutoff} type="number" fieldName="dataCutoff" className="number-narrow" label="Data Cutoff" updateField={updateField} />
                     </>
                   )}
-                  { (config.visualizationSubType === "horizontal" && config.yAxis.labelPlacement !== "On Bar") &&
-                    <TextField type="number" value={ config.barHeight || "25" } fieldName="barHeight" label="Bar Thickness" updateField={updateField} min="15"/>
+                  { ((config.visualizationSubType === "horizontal" && config.yAxis.labelPlacement !== "On Bar") || config.visualizationType === 'Horizontal Bar Chart') &&
+                    <TextField type="number" value={ config.barHeight || "25" } fieldName="barHeight" label="Bar Thickness" updateField={updateField} min="25"/>
                   }
                   { ((config.visualizationType === "Bar") || config.visualizationType === "Combo" || config.visualizationType === 'Horizontal Bar Chart') &&
                     <TextField value={config.barThickness} type="number" fieldName="barThickness" label="Bar Thickness" updateField={updateField} />

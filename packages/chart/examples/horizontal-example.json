@@ -2,7 +2,7 @@
     "title": "Horizontal Bar Refactor",
     "dataUrl":  "/examples/planet-example-data.json",
     "visualizationType": "Horizontal Bar Chart",
-	"visualizationSubType": "horizontal",
+    "visualizationSubType": "horizontal",
     "barHasBorder": "true",
     "series": [{"dataKey": "Diameter"}, {"dataKey":"Radius", "type":"Line"}],
     "fontSize": "small",

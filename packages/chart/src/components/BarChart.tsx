@@ -229,7 +229,7 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
                           style={{ 'opacity': 1, filter: 'unset' }}
                         />
                       } */}
-                      { (visualizationSubType === "horizontal" || config.visualizationType === 'Horizontal Bar Chart') && textWidth + 100 < bar.y ?
+                      { (visualizationSubType === "horizontal" && config.visualizationType !== 'Horizontal Bar Chart') && textWidth + 100 < bar.y ?
                         config.yAxis.labelPlacement === "On Bar" &&
                           <Group>
                               <Text
@@ -283,7 +283,7 @@ export default function BarChart({ xScale, yScale, seriesScale, xMax, yMax, getX
                           </Group>
                       }
 
-                      { config.visualizationSubType === "horizontal" && isLabelBelowBar &&
+                      { config.visualizationSubType === "horizontal" && config.visualizationType !== 'Horizontal Bar Chart' && isLabelBelowBar &&
                       <>
                         <Text
                             x={ config.yAxis.hideAxis ? 0 : 5 } // padding

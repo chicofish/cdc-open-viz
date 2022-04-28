@@ -14,6 +14,8 @@ const useLollipopChart = () => {
 		)
 	}
 
+	// On changes from a lollipop back to a bar chart
+	// resets the bar height to 25.
 	useEffect(() => {
 		if (config.isLollipopChart === false) {
 			updateConfig({ ...config, barHeight: 25 })
