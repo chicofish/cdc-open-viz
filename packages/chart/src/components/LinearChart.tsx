@@ -162,7 +162,8 @@ export default function LinearChart() {
       // Metric value on sort
       yScale = scaleBand({
         domain: data.map(getCategoryScale),
-        padding: config.barThickness,
+        padding: 0.35,
+        range: [config.height, 0]
       });
 
       seriesScale = scaleBand({

@@ -19,6 +19,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 	const barTextPadding = 5;
 	
 	/**
+	 * todo: change Horizontal Bar Group from band
 	 * todo: fix/add lollipop items
 	 * todo: display numbers on bar / after bar lollipop change
 	 */
@@ -41,7 +42,7 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 	}
 
 	React.useEffect(() => {
-		if(config.barHeight < 25) {
+		if(config.barHeight <= 25) {
 			config.barHeight = 25
 		}
 	}, [config]);
@@ -102,16 +103,15 @@ const HorizontalBarChart = ({width, height, xScale, yScale, seriesScale}) => {
 
 										const barsPerGroup = config.series.length;
 										let barHeight = config.barHeight ? config.barHeight : 25;
-										let barPadding = barHeight;
 
 										if (isLabelBelowBar || isLabelMissing || isLabelOnYAxis) {
 											if (barHeight < 40) {
-												config.barPadding = barPadding * 1.4;
+												config.barPadding = 30;
 											} else {
-												config.barPadding = barPadding;
+												config.barPadding = 30;
 											}
 										} else {
-											config.barPadding = barPadding / 2;
+											config.barPadding = 30;
 										}
 
 										//config.barPadding = barPadding + barTextPadding;
