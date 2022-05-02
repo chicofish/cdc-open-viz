@@ -30,7 +30,8 @@ export default function DataImport() {
     maxFileSize,
     setGlobalActive,
     tempConfig,
-    setTempConfig
+    setTempConfig,
+    fileBrowseData
   } = useContext(GlobalState)
 
   const transform = new DataTransform()
@@ -299,6 +300,13 @@ export default function DataImport() {
               </TabPane>
               <TabPane title="Load from URL" icon={<LinkIcon className="inline-icon"/>}>
                 {loadFileFromUrl(externalURL)}
+              </TabPane>
+              <TabPane title="File Browser" icon={<LinkIcon className="inline-icon" />}>
+                  <ul>
+                      {fileBrowseData && fileBrowseData.map( data => (
+                        <li>{data.title}</li>
+                      ))}
+                  </ul>
               </TabPane>
             </Tabs>
             {errors && (errors.map ? errors.map((message, index) => (

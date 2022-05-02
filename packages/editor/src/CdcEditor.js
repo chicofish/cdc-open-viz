@@ -15,10 +15,11 @@ import Tabs from './components/Tabs';
 
 import './scss/main.scss';
 
-export default function CdcEditor({ config: configObj = {newViz: true}, hostname, containerEl }) {
+export default function CdcEditor({ config: configObj = {newViz: true}, hostname, containerEl, fileBrowse }) {
   const [config, setConfig] = useState(configObj)
   const [tempConfig, setTempConfig] = useState(null)
   const [errors, setErrors] = useState([])
+  const [fileBrowseData, setFileBrowseData] = useState(null)
 
   const [currentViewport, setCurrentViewport] = useState('lg')
   const [dimensions, setDimensions] = useState([])
@@ -68,6 +69,15 @@ export default function CdcEditor({ config: configObj = {newViz: true}, hostname
     }
   }, [globalActive])
 
+  useEffect(() => {
+    fetch(fileBrowse)
+      .then( data => data.json() )
+      .then( data => setFileBrowseData(data) )
+      console.log(fileBrowseData)
+  }, [fileBrowse]);
+
+  console.log('file browse data is', fileBrowseData)
+
   const maxFileSize = 10; // Represents number of MB. Maybe move this to a prop eventually but static for now.
 
   const errorMessages = {
@@ -93,7 +103,8 @@ export default function CdcEditor({ config: configObj = {newViz: true}, hostname
     globalActive,
     setGlobalActive,
     tempConfig,
-    setTempConfig
+    setTempConfig,
+    fileBrowseData
   }
 
   return (
