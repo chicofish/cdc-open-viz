@@ -12,6 +12,10 @@ This project is still under heavy initial development with the roadmap extending
 | [@cdc/dashboard](https://github.com/CDCgov/cdc-open-viz/tree/main/packages/dashboard) | React component to build and display multiple data visualizations. |
 | [@cdc/data-bite](https://github.com/CDCgov/cdc-open-viz/tree/main/packages/data-bite) | React component for bringing attention to and visualizing a smaller data point. |
 
+## Sample Gallery
+
+CDC OpenViz has been incorporated into CDC's Web Content Management System and examples of the various visualizations may be found here: https://www.cdc.gov/wcms/4.0/cdc-wp/data-presentation/index.html  (minus the PowerBI visualization module).
+
 ## Setup <a name="setup"></a>
 
 This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that is managed with [Lerna](https://github.com/lerna/lerna#readme) and uses [yarn](https://yarnpkg.com/) for package management. Make sure you have yarn installed before beginning. To work on individual packages you must setup the entire monorepo.
