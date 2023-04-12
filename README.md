@@ -1,8 +1,8 @@
 # CDC OpenViz
 
-CDC OpenViz is a collection of React components and related packages centered around data visualization. These components are used to power visualizations across cdc.gov and affiliated projects.
+CDC OpenViz is a collection of React components and related packages centered around data visualization. Whereas this project has been incorporated into the CDC WCMS, it is not dependent upon the WCMS and can be integrated into any system. These components are used to power visualizations across cdc.gov and affiliated projects.
 
-This project is still under heavy initial development with the roadmap extending into late 2022.
+This project is still under heavy development with the roadmap extending into late 2023.
 
 | Package | Description |
 | --- | ----------- |
